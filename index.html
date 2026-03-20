@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prototypes — bakleim</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .card:hover .arrow { transform: translateX(4px); }
+    .arrow { transition: transform 0.2s ease; display:inline-block; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<header class="bg-white border-b border-slate-200">
+  <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 001.591 2.25M14.25 3.104c.251.023.501.05.75.082M15.841 14.59a2.25 2.25 0 000 3.18l.75.75a2.25 2.25 0 003.182 0l.75-.75a2.25 2.25 0 000-3.182l-.75-.75a2.25 2.25 0 00-3.182 0l-.75.75z"/>
+        </svg>
+      </div>
+      <span class="font-semibold text-slate-800">bakleim / prototypes</span>
+    </div>
+    <a href="https://github.com/bakleim/prototypes" target="_blank"
+      class="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1.5 transition-colors">
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+      </svg>
+      View on GitHub
+    </a>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-6 py-12">
+
+  <div class="mb-10">
+    <h1 class="text-3xl font-bold text-slate-900">Design Prototypes</h1>
+    <p class="text-slate-500 mt-2">A collection of interactive UI prototypes exploring partnerships, AI discovery, free tools, and more.</p>
+  </div>
+
+  <!-- Partnerships -->
+  <section class="mb-10">
+    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Partnerships</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <a href="https://bakleim.github.io/squarespace-bitly-integration/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
+          </div>
+          <span class="text-xs bg-indigo-50 text-indigo-600 font-medium px-2 py-0.5 rounded-full">Interactive</span>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Squarespace × Bitly Integration</h3>
+        <p class="text-slate-500 text-sm mt-1">Three integration scenarios: post-publish CTA, launch readiness checklist, and contextual page share menu.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+      <a href="https://bakleim.github.io/branded-link-preview/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Branded Link Preview</h3>
+        <p class="text-slate-500 text-sm mt-1">Preview experience for branded short links with custom domains.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+      <a href="https://bakleim.github.io/verified-links/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Verified Links</h3>
+        <p class="text-slate-500 text-sm mt-1">Trust and verification layer for short links with cryptographic proof.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- AI & Discovery -->
+  <section class="mb-10">
+    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">AI & Discovery</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <a href="https://bakleim.github.io/ai-discovery-prototype/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+            </svg>
+          </div>
+          <span class="text-xs bg-purple-50 text-purple-600 font-medium px-2 py-0.5 rounded-full">Interactive</span>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">AI Discovery Prototype</h3>
+        <p class="text-slate-500 text-sm mt-1">AI-powered discovery experience with audit templates for QR codes and competitive analysis.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+      <a href="https://bakleim.github.io/ai-discovery-optimized/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+            </svg>
+          </div>
+          <span class="text-xs bg-sky-50 text-sky-600 font-medium px-2 py-0.5 rounded-full">Optimized</span>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">AI Discovery (Optimized)</h3>
+        <p class="text-slate-500 text-sm mt-1">Performance-optimized version of the AI discovery experience.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+      <a href="https://bakleim.github.io/agents-bitly-com/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Agents @ Bitly</h3>
+        <p class="text-slate-500 text-sm mt-1">AI agent interface concept for Bitly's platform.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Free Tools -->
+  <section class="mb-10">
+    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Free Tools</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <a href="https://bakleim.github.io/bitly-free-tools/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17l-5.384-3.077A.25.25 0 006 12.299V16.5a.75.75 0 00.372.648l5.994 3.497a.75.75 0 00.756 0l5.994-3.497A.75.75 0 0019.5 16.5v-4.201a.25.25 0 00-.036-.206l-5.384 3.077a.75.75 0 01-.756 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 4.395a.75.75 0 01-.724 0L2.264 12.739a.75.75 0 010-1.299l7.694-4.395a.75.75 0 01.724 0l7.693 4.395a.75.75 0 010 1.3z"/>
+            </svg>
+          </div>
+          <span class="text-xs bg-green-50 text-green-600 font-medium px-2 py-0.5 rounded-full">Interactive</span>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Bitly Free Tools</h3>
+        <p class="text-slate-500 text-sm mt-1">Suite of free tools: URL shortener, link checker, QR generator, digital business card, and link-in-bio.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+      <a href="https://bakleim.github.io/qr-bridge/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">QR Bridge</h3>
+        <p class="text-slate-500 text-sm mt-1">QR code migration tool — detect, import, and map QR codes to Bitly.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+      <a href="https://bakleim.github.io/custom-pricing-builder/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Custom Pricing Builder</h3>
+        <p class="text-slate-500 text-sm mt-1">Interactive pricing configurator for custom enterprise plans.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Campaigns -->
+  <section class="mb-10">
+    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Campaigns</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <a href="https://bakleim.github.io/smart-campaign-builder/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+            </svg>
+          </div>
+          <span class="text-xs bg-rose-50 text-rose-600 font-medium px-2 py-0.5 rounded-full">Interactive</span>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Smart Campaign Builder</h3>
+        <p class="text-slate-500 text-sm mt-1">AI-powered campaign planning with auto-generated channel strategy and smart tags.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Personal -->
+  <section class="mb-10">
+    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Personal Projects</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <a href="https://bakleim.github.io/camp-finder/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-lime-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-lime-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Camp Finder</h3>
+        <p class="text-slate-500 text-sm mt-1">Search and discover summer camps with filtering and map views.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+      <a href="https://bakleim.github.io/gallery-wall/" target="_blank" class="card bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all p-6 group block">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-10 h-10 bg-fuchsia-100 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-fuchsia-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+            </svg>
+          </div>
+        </div>
+        <h3 class="font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">Gallery Wall</h3>
+        <p class="text-slate-500 text-sm mt-1">Plan and visualize gallery wall layouts with draggable frames and hanging guides.</p>
+        <p class="text-xs text-indigo-500 mt-4">Explore <span class="arrow">→</span></p>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="border-t border-slate-200 mt-12">
+  <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between text-xs text-slate-400">
+    <span>bakleim · prototypes</span>
+    <span>Built with Claude Code</span>
+  </div>
+</footer>
+
+</body>
+</html>
