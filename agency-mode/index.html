@@ -6,7 +6,7 @@
   <title>Bitly Agency Mode — Prototype</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #F5F7FA; }
     #root { height: 100vh; }
   </style>
 </head>
@@ -16,24 +16,20 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
   <script type="text/babel">
-const { useState, useEffect } = React;
+const { useState } = React;
 
-// --- Mock Data ---
 const clients = [
-  { id: "all", name: "All Clients", icon: "grid", color: "#EE6123" },
   { id: "acme", name: "Acme Corp", icon: "A", color: "#4C6EF5" },
   { id: "globex", name: "Globex Industries", icon: "G", color: "#12B886" },
   { id: "initech", name: "Initech", icon: "I", color: "#F59F00" },
   { id: "waystar", name: "Waystar Royco", icon: "W", color: "#E64980" },
 ];
-
 const clientMetrics = {
-  acme: { clicks: 48720, links: 312, qrScans: 8430, topChannel: "Email", weekTrend: +12.4, campaigns: 24 },
-  globex: { clicks: 31200, links: 187, qrScans: 4210, topChannel: "Social", weekTrend: -3.1, campaigns: 16 },
-  initech: { clicks: 22100, links: 95, qrScans: 2890, topChannel: "Paid Search", weekTrend: +8.7, campaigns: 11 },
-  waystar: { clicks: 67400, links: 421, qrScans: 12100, topChannel: "Social", weekTrend: +22.1, campaigns: 38 },
+  acme: { engagements: 48720, clicks: 34210, qrScans: 8430, pageClicks: 6080, links: 312, campaigns: 24 },
+  globex: { engagements: 31200, clicks: 22100, qrScans: 4210, pageClicks: 4890, links: 187, campaigns: 16 },
+  initech: { engagements: 22100, clicks: 15400, qrScans: 2890, pageClicks: 3810, links: 95, campaigns: 11 },
+  waystar: { engagements: 67400, clicks: 48200, qrScans: 12100, pageClicks: 7100, links: 421, campaigns: 38 },
 };
-
 const recentLinks = {
   acme: [
     { title: "acme_spring24_email_hero-cta", url: "bit.ly/acme-spring", clicks: 3420, created: "Mar 18" },
@@ -54,266 +50,33 @@ const recentLinks = {
     { title: "waystar_event_social_rsvp", url: "bit.ly/ws-event", clicks: 6100, created: "Mar 17" },
   ],
 };
-
 const namingTemplates = [
   { id: 1, name: "Standard Campaign", pattern: "{client}_{campaign}_{channel}_{asset}", example: "acme_spring24_email_hero-cta", isDefault: true },
   { id: 2, name: "Social Media", pattern: "{client}_{campaign}_{platform}_{format}", example: "globex_rebrand_instagram_story", isDefault: false },
   { id: 3, name: "Event Tracking", pattern: "{client}_{event}_{type}_{variant}", example: "waystar_summit24_reg_earlybird", isDefault: false },
 ];
-
-// --- Sparkline Component ---
-const Sparkline = ({ data, color, width = 80, height = 28 }) => {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const points = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 4) - 2}`).join(" ");
-  return (
-    <svg width={width} height={height} style={{ display: "block" }}>
-      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+const trendMap = { acme: 12.4, globex: -3.1, initech: 8.7, waystar: 22.1 };
+const sparkMap = {
+  acme: [3200, 3800, 4100, 3900, 4500, 5200, 4800],
+  globex: [2800, 2600, 3100, 2900, 2700, 3000, 2800],
+  initech: [1500, 1800, 2000, 1900, 2200, 2400, 2100],
+  waystar: [5000, 5800, 6200, 7100, 7800, 8400, 9200],
 };
 
-// --- Cross-Client Dashboard ---
-const CrossClientDashboard = ({ onSelectClient }) => {
-  const totalClicks = Object.values(clientMetrics).reduce((s, m) => s + m.clicks, 0);
-  const totalLinks = Object.values(clientMetrics).reduce((s, m) => s + m.links, 0);
-  const totalScans = Object.values(clientMetrics).reduce((s, m) => s + m.qrScans, 0);
-  const totalCampaigns = Object.values(clientMetrics).reduce((s, m) => s + m.campaigns, 0);
+const SidebarIcon = ({ icon, label, active, onClick, badge }) => (
+  <div onClick={onClick} title={label} style={{
+    width: 40, height: 40, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer", position: "relative", marginBottom: 4,
+    background: active ? "rgba(238,97,35,0.12)" : "transparent",
+    color: active ? "#EE6123" : "#6B778C", transition: "all 0.15s",
+  }}
+    onMouseEnter={e => { if (!active) e.currentTarget.style.background = "#EBECF0"; }}
+    onMouseLeave={e => { if (!active) e.currentTarget.style.background = active ? "rgba(238,97,35,0.12)" : "transparent"; }}>
+    <span style={{ fontSize: 18 }}>{icon}</span>
+    {badge && <span style={{ position: "absolute", top: 4, right: 4, width: 8, height: 8, borderRadius: 4, background: "#12B886" }} />}
+  </div>
+);
 
-  const sparkData = {
-    acme: [3200, 3800, 4100, 3900, 4500, 5200, 4800],
-    globex: [2800, 2600, 3100, 2900, 2700, 3000, 2800],
-    initech: [1500, 1800, 2000, 1900, 2200, 2400, 2100],
-    waystar: [5000, 5800, 6200, 7100, 7800, 8400, 9200],
-  };
-
-  return (
-    <div>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#091E42", margin: 0 }}>Agency Overview</h1>
-        <p style={{ fontSize: 14, color: "#6B778C", margin: "4px 0 0" }}>Performance across all client workspaces — Last 30 days</p>
-      </div>
-
-      {/* Summary cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
-        {[
-          { label: "Total Clicks", value: totalClicks.toLocaleString(), icon: "↗", color: "#EE6123" },
-          { label: "Active Links", value: totalLinks.toLocaleString(), icon: "🔗", color: "#4C6EF5" },
-          { label: "QR Scans", value: totalScans.toLocaleString(), icon: "⊞", color: "#12B886" },
-          { label: "Campaigns", value: totalCampaigns.toLocaleString(), icon: "◎", color: "#F59F00" },
-        ].map((card) => (
-          <div key={card.label} style={{ background: "#fff", borderRadius: 10, padding: "20px 22px", border: "1px solid #EBECF0" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontSize: 13, color: "#6B778C", fontWeight: 500 }}>{card.label}</span>
-              <span style={{ fontSize: 18 }}>{card.icon}</span>
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: "#091E42" }}>{card.value}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Client table */}
-      <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EBECF0", overflow: "hidden" }}>
-        <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid #EBECF0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, color: "#091E42", margin: 0 }}>Client Performance</h2>
-          <select style={{ fontSize: 13, padding: "6px 12px", borderRadius: 6, border: "1px solid #DFE1E6", color: "#6B778C", background: "#fff" }}>
-            <option>Last 30 days</option>
-            <option>Last 7 days</option>
-            <option>Last 90 days</option>
-          </select>
-        </div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ background: "#FAFBFC" }}>
-              {["Client", "Clicks", "Links", "QR Scans", "Top Channel", "7d Trend", ""].map((h) => (
-                <th key={h} style={{ padding: "10px 22px", textAlign: "left", fontSize: 11, fontWeight: 600, color: "#6B778C", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {clients.filter((c) => c.id !== "all").map((client) => {
-              const m = clientMetrics[client.id];
-              return (
-                <tr key={client.id} style={{ borderTop: "1px solid #EBECF0", cursor: "pointer", transition: "background 0.15s" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#F4F5F7")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                  onClick={() => onSelectClient(client.id)}>
-                  <td style={{ padding: "14px 22px", display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: client.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>{client.icon}</div>
-                    <span style={{ fontWeight: 600, fontSize: 14, color: "#091E42" }}>{client.name}</span>
-                  </td>
-                  <td style={{ padding: "14px 22px", fontSize: 14, fontWeight: 600, color: "#091E42" }}>{m.clicks.toLocaleString()}</td>
-                  <td style={{ padding: "14px 22px", fontSize: 14, color: "#42526E" }}>{m.links}</td>
-                  <td style={{ padding: "14px 22px", fontSize: 14, color: "#42526E" }}>{m.qrScans.toLocaleString()}</td>
-                  <td style={{ padding: "14px 22px", fontSize: 14, color: "#42526E" }}>{m.topChannel}</td>
-                  <td style={{ padding: "14px 22px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Sparkline data={sparkData[client.id]} color={m.weekTrend >= 0 ? "#12B886" : "#E64980"} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: m.weekTrend >= 0 ? "#12B886" : "#E64980" }}>
-                        {m.weekTrend >= 0 ? "+" : ""}{m.weekTrend}%
-                      </span>
-                    </div>
-                  </td>
-                  <td style={{ padding: "14px 22px" }}>
-                    <span style={{ fontSize: 12, color: "#6B778C", padding: "4px 10px", borderRadius: 4, border: "1px solid #DFE1E6" }}>View →</span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-// --- Single Client View ---
-const ClientView = ({ clientId }) => {
-  const client = clients.find((c) => c.id === clientId);
-  const m = clientMetrics[clientId];
-  const links = recentLinks[clientId] || [];
-
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 10, background: client.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18 }}>{client.icon}</div>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#091E42", margin: 0 }}>{client.name}</h1>
-          <p style={{ fontSize: 13, color: "#6B778C", margin: "2px 0 0" }}>{m.campaigns} active campaigns · {m.links} links</p>
-        </div>
-      </div>
-
-      {/* Stat cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
-        {[
-          { label: "Total Clicks", value: m.clicks.toLocaleString(), trend: m.weekTrend },
-          { label: "QR Code Scans", value: m.qrScans.toLocaleString(), trend: null },
-          { label: "Top Channel", value: m.topChannel, trend: null },
-        ].map((card) => (
-          <div key={card.label} style={{ background: "#fff", borderRadius: 10, padding: "20px 22px", border: "1px solid #EBECF0" }}>
-            <span style={{ fontSize: 13, color: "#6B778C", fontWeight: 500 }}>{card.label}</span>
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#091E42", marginTop: 6 }}>{card.value}</div>
-            {card.trend !== null && (
-              <span style={{ fontSize: 13, fontWeight: 600, color: card.trend >= 0 ? "#12B886" : "#E64980" }}>
-                {card.trend >= 0 ? "↑" : "↓"} {Math.abs(card.trend)}% vs last week
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Recent links */}
-      <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EBECF0", overflow: "hidden" }}>
-        <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid #EBECF0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 600, color: "#091E42", margin: 0 }}>Recent Links</h2>
-          <button style={{ fontSize: 13, padding: "7px 16px", borderRadius: 8, border: "none", background: "#EE6123", color: "#fff", fontWeight: 600, cursor: "pointer" }}>+ Create Link</button>
-        </div>
-        {links.map((link, i) => (
-          <div key={i} style={{ padding: "14px 22px", borderTop: i > 0 ? "1px solid #EBECF0" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "#091E42", fontFamily: "monospace" }}>{link.title}</div>
-              <div style={{ fontSize: 12, color: "#EE6123", marginTop: 2 }}>{link.url}</div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#091E42" }}>{link.clicks.toLocaleString()} clicks</div>
-              <div style={{ fontSize: 12, color: "#6B778C" }}>{link.created}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// --- Naming Conventions View ---
-const NamingConventions = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState(1);
-  const [previewValues, setPreviewValues] = useState({ client: "acme", campaign: "summer24", channel: "email", asset: "hero-cta" });
-  const [showNewModal, setShowNewModal] = useState(false);
-
-  const currentTemplate = namingTemplates.find((t) => t.id === selectedTemplate);
-  const fields = currentTemplate.pattern.match(/\{(\w+)\}/g).map((f) => f.replace(/[{}]/g, ""));
-  const preview = fields.map((f) => previewValues[f] || `{${f}}`).join("_");
-
-  return (
-    <div>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#091E42", margin: 0 }}>Naming Conventions</h1>
-        <p style={{ fontSize: 14, color: "#6B778C", margin: "4px 0 0" }}>Standardize link naming across your agency with saved templates</p>
-      </div>
-
-      {/* Template cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
-        {namingTemplates.map((t) => (
-          <div key={t.id} onClick={() => setSelectedTemplate(t.id)}
-            style={{
-              background: selectedTemplate === t.id ? "#FFF4EE" : "#fff",
-              borderRadius: 10,
-              padding: "18px 20px",
-              border: selectedTemplate === t.id ? "2px solid #EE6123" : "1px solid #EBECF0",
-              cursor: "pointer",
-              transition: "all 0.15s",
-            }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#091E42" }}>{t.name}</span>
-              {t.isDefault && <span style={{ fontSize: 10, fontWeight: 700, color: "#EE6123", background: "#FFF4EE", padding: "2px 8px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>Default</span>}
-            </div>
-            <div style={{ fontSize: 12, fontFamily: "monospace", color: "#6B778C", background: "#F4F5F7", padding: "6px 10px", borderRadius: 6 }}>{t.pattern}</div>
-            <div style={{ fontSize: 11, color: "#6B778C", marginTop: 8 }}>e.g. {t.example}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Live preview builder */}
-      <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EBECF0", padding: "22px", marginBottom: 20 }}>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: "#091E42", margin: "0 0 18px" }}>Live Preview</h2>
-
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${fields.length}, 1fr)`, gap: 12, marginBottom: 20 }}>
-          {fields.map((field) => (
-            <div key={field}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#6B778C", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", marginBottom: 6 }}>{field}</label>
-              <input
-                type="text"
-                value={previewValues[field] || ""}
-                onChange={(e) => setPreviewValues({ ...previewValues, [field]: e.target.value })}
-                placeholder={field}
-                style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #DFE1E6", fontSize: 14, color: "#091E42", fontFamily: "monospace", boxSizing: "border-box", outline: "none" }}
-                onFocus={(e) => (e.target.style.borderColor = "#EE6123")}
-                onBlur={(e) => (e.target.style.borderColor = "#DFE1E6")}
-              />
-            </div>
-          ))}
-        </div>
-
-        <div style={{ background: "#FAFBFC", borderRadius: 8, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#6B778C", textTransform: "uppercase", letterSpacing: "0.5px" }}>Generated name</span>
-            <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "monospace", color: "#091E42", marginTop: 4 }}>{preview}</div>
-          </div>
-          <button style={{ fontSize: 13, padding: "8px 20px", borderRadius: 8, border: "none", background: "#EE6123", color: "#fff", fontWeight: 600, cursor: "pointer" }}>Use this name →</button>
-        </div>
-      </div>
-
-      {/* Settings row */}
-      <div style={{ background: "#fff", borderRadius: 10, border: "1px solid #EBECF0", padding: "18px 22px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#091E42" }}>Auto-apply naming convention</div>
-            <div style={{ fontSize: 13, color: "#6B778C", marginTop: 2 }}>Prompt team members to use the default template when creating new links</div>
-          </div>
-          <div onClick={() => {}} style={{
-            width: 44, height: 24, borderRadius: 12, background: "#EE6123", cursor: "pointer", position: "relative", transition: "background 0.2s",
-          }}>
-            <div style={{ width: 20, height: 20, borderRadius: 10, background: "#fff", position: "absolute", top: 2, left: 22, boxShadow: "0 1px 3px rgba(0,0,0,0.15)", transition: "left 0.2s" }} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- Painted Door Modal ---
 const PaintedDoorModal = ({ feature, onClose }) => (
   <div style={{ position: "fixed", inset: 0, background: "rgba(9,30,66,0.54)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
     <div style={{ background: "#fff", borderRadius: 14, padding: "36px 40px", maxWidth: 420, width: "100%", textAlign: "center" }}>
@@ -330,165 +93,289 @@ const PaintedDoorModal = ({ feature, onClose }) => (
   </div>
 );
 
-// --- Main App ---
-function BitlyAgencyMode() {
-  const [activeClient, setActiveClient] = useState("all");
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [paintedDoor, setPaintedDoor] = useState(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+const Sparkline = ({ data, color, width = 80, height = 28 }) => {
+  const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
+  const pts = data.map((v, i) => `${(i / (data.length - 1)) * width},${height - ((v - min) / range) * (height - 4) - 2}`).join(" ");
+  return <svg width={width} height={height} style={{ display: "block" }}><polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+};
 
-  const handleSelectClient = (id) => {
-    setActiveClient(id);
-    setActiveTab("dashboard");
-  };
+const StatCard = ({ icon, label, value }) => (
+  <div>
+    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+      <span style={{ fontSize: 14 }}>{icon}</span>
+      <span style={{ fontSize: 10, fontWeight: 700, color: "#6B778C", textTransform: "uppercase", letterSpacing: "0.5px" }}>{label}</span>
+    </div>
+    <div style={{ fontSize: 28, fontWeight: 700, color: "#091E42" }}>{value.toLocaleString()}</div>
+  </div>
+);
 
-  const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: "▦" },
-    { id: "links", label: "Links", icon: "🔗" },
-    { id: "naming", label: "Naming Conventions", icon: "✎", isNew: true },
-    { id: "qr", label: "QR Codes", icon: "⊞" },
-    { id: "campaigns", label: "Campaigns", icon: "◎" },
-  ];
+const AgencyDashboard = ({ onSelectClient, setPaintedDoor }) => {
+  const t = Object.values(clientMetrics).reduce((a, m) => ({
+    engagements: a.engagements + m.engagements, clicks: a.clicks + m.clicks,
+    qrScans: a.qrScans + m.qrScans, pageClicks: a.pageClicks + m.pageClicks,
+  }), { engagements: 0, clicks: 0, qrScans: 0, pageClicks: 0 });
 
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', background: "#F4F5F7" }}>
-      {/* Sidebar */}
-      <div style={{ width: 260, background: "#091E42", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-        {/* Logo */}
-        <div style={{ padding: "20px 22px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <rect width="24" height="24" rx="6" fill="#EE6123" />
-              <path d="M7 12h10M12 7v10" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
-            <span style={{ color: "#fff", fontSize: 18, fontWeight: 700, letterSpacing: "-0.3px" }}>Bitly</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "#EE6123", background: "rgba(238,97,35,0.15)", padding: "2px 8px", borderRadius: 4, marginLeft: 4, textTransform: "uppercase", letterSpacing: "0.5px" }}>Agency</span>
+    <div>
+      <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+        <div style={{ flex: 1, background: "#fff", borderRadius: 12, padding: "24px 28px", border: "1px solid #EBECF0" }}>
+          <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#091E42", padding: "6px 0", borderBottom: "2px solid #EE6123" }}>Short link</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: "#6B778C", padding: "6px 0", cursor: "pointer" }}>QR Code</span>
           </div>
-        </div>
-
-        {/* Client Switcher */}
-        <div style={{ padding: "16px 14px 8px" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "1px", padding: "0 8px", marginBottom: 10 }}>Workspaces</div>
-          {clients.map((client) => (
-            <div
-              key={client.id}
-              onClick={() => handleSelectClient(client.id)}
-              style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 8, cursor: "pointer", marginBottom: 2,
-                background: activeClient === client.id ? "rgba(255,255,255,0.1)" : "transparent",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => { if (activeClient !== client.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-              onMouseLeave={(e) => { if (activeClient !== client.id) e.currentTarget.style.background = "transparent"; }}
-            >
-              {client.id === "all" ? (
-                <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(238,97,35,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: 14 }}>⊞</span>
-                </div>
-              ) : (
-                <div style={{ width: 28, height: 28, borderRadius: 7, background: client.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>{client.icon}</div>
-              )}
-              <span style={{ fontSize: 13, fontWeight: activeClient === client.id ? 600 : 400, color: activeClient === client.id ? "#fff" : "rgba(255,255,255,0.7)" }}>{client.name}</span>
-              {client.id !== "all" && (
-                <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>{clientMetrics[client.id].links}</span>
-              )}
-            </div>
-          ))}
-          <div
-            onClick={() => setPaintedDoor("Add Client Workspace")}
-            style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 8, cursor: "pointer", marginTop: 4, border: "1px dashed rgba(255,255,255,0.15)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)")}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)")}
-          >
-            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>+ Add client workspace</span>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#091E42", marginBottom: 4 }}>Quick create: Short link</div>
+          <div style={{ fontSize: 13, color: "#6B778C", marginBottom: 16 }}>Domain: <span style={{ color: "#091E42", fontWeight: 500 }}>bit.ly</span> <span style={{ fontSize: 11, color: "#6B778C" }}>▼</span></div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#42526E", marginBottom: 6 }}>Enter your destination URL</div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <input placeholder="https://example.com/my-long-url" style={{ flex: 1, padding: "11px 14px", borderRadius: 8, border: "1px solid #DFE1E6", fontSize: 14, outline: "none" }} onFocus={e => e.target.style.borderColor = "#EE6123"} onBlur={e => e.target.style.borderColor = "#DFE1E6"} />
+            <button style={{ padding: "11px 20px", borderRadius: 8, border: "none", background: "#EE6123", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>Create your Bitly link</button>
           </div>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, fontSize: 13, color: "#42526E", cursor: "pointer" }}>
+            <input type="checkbox" style={{ accentColor: "#EE6123" }} /> Also create a QR Code for this link
+          </label>
         </div>
-
-        {/* Nav */}
-        <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(255,255,255,0.08)", marginTop: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "1px", padding: "0 8px", marginBottom: 10 }}>Navigate</div>
-          {navItems.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => {
-                if (item.id === "qr" || item.id === "campaigns") {
-                  setPaintedDoor(item.label);
-                } else {
-                  setActiveTab(item.id);
-                }
-              }}
-              style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 8, cursor: "pointer", marginBottom: 2,
-                background: activeTab === item.id ? "rgba(238,97,35,0.15)" : "transparent",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => { if (activeTab !== item.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-              onMouseLeave={(e) => { if (activeTab !== item.id) e.currentTarget.style.background = "transparent"; }}
-            >
-              <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>{item.icon}</span>
-              <span style={{ fontSize: 13, fontWeight: activeTab === item.id ? 600 : 400, color: activeTab === item.id ? "#EE6123" : "rgba(255,255,255,0.7)" }}>{item.label}</span>
-              {item.isNew && <span style={{ fontSize: 9, fontWeight: 700, color: "#12B886", background: "rgba(18,184,134,0.15)", padding: "1px 6px", borderRadius: 3, textTransform: "uppercase", letterSpacing: "0.5px", marginLeft: "auto" }}>New</span>}
-            </div>
-          ))}
-        </div>
-
-        {/* Bottom user */}
-        <div style={{ marginTop: "auto", padding: "16px 22px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#4C6EF5", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>BK</div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>Ben K.</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>Agency Admin</div>
-            </div>
-          </div>
+        <div style={{ width: 260, background: "#fff", borderRadius: 12, padding: "24px", border: "1px solid #EBECF0" }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#091E42", marginBottom: 12 }}>✨ Simplify your workflow</div>
+          <div style={{ fontSize: 13, color: "#6B778C", marginBottom: 16 }}>Explore smarter ways to create links.</div>
+          <div style={{ fontSize: 13, color: "#42526E", marginBottom: 8 }}>✨ Personalize a short link</div>
+          <div style={{ fontSize: 13, color: "#42526E", marginBottom: 16 }}>✦ Make a unique link for every post</div>
+          <button style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #DFE1E6", background: "#fff", fontSize: 13, fontWeight: 600, color: "#091E42", cursor: "pointer" }}>Create with AI →</button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div style={{ flex: 1, overflow: "auto", padding: "28px 36px" }}>
-        {/* Breadcrumb / context bar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#6B778C" }}>
-            <span>Agency</span>
-            <span style={{ color: "#DFE1E6" }}>/</span>
-            <span style={{ color: "#091E42", fontWeight: 600 }}>{activeClient === "all" ? "All Clients" : clients.find((c) => c.id === activeClient)?.name}</span>
-            {activeTab !== "dashboard" && (
-              <>
-                <span style={{ color: "#DFE1E6" }}>/</span>
-                <span style={{ color: "#091E42", fontWeight: 600 }}>{navItems.find((n) => n.id === activeTab)?.label}</span>
-              </>
+      <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+        <div style={{ flex: 1, background: "#fff", borderRadius: 12, padding: "22px 28px", border: "1px solid #EBECF0" }}>
+          <div style={{ marginBottom: 20 }}>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "#091E42" }}>Past week</span>
+            <span style={{ fontSize: 10, color: "#6B778C", marginLeft: 4 }}>▼</span>
+            <div style={{ fontSize: 12, color: "#6B778C" }}>3/18/2026 - 3/24/2026</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+            <StatCard icon="📊" label="ENGAGEMENTS" value={t.engagements} />
+            <StatCard icon="🔗" label="LINK CLICKS" value={t.clicks} />
+            <StatCard icon="⊞" label="QR CODE SCANS" value={t.qrScans} />
+            <StatCard icon="📄" label="PAGES CLICKS" value={t.pageClicks} />
+          </div>
+          <div style={{ marginTop: 14 }}><span style={{ fontSize: 13, color: "#EE6123", fontWeight: 500, cursor: "pointer" }}>Explore Analytics →</span></div>
+        </div>
+        <div style={{ width: 260, background: "#fff", borderRadius: 12, padding: "22px 24px", border: "1px solid #EBECF0" }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#091E42", marginBottom: 4 }}>✨ Ask about your data <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: "#12B886", padding: "2px 8px", borderRadius: 10, marginLeft: 6 }}>New!</span></div>
+          <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+            {["Summarize my performance from the last 7 days", "Analyze my top performing links", "See which traffic sources drive the most clicks"].map(q => (
+              <div key={q} style={{ fontSize: 13, color: "#42526E", padding: "8px 12px", background: "#F5F7FA", borderRadius: 8, cursor: "pointer" }}>✨ {q}</div>
+            ))}
+          </div>
+          <div style={{ marginTop: 14 }}><span style={{ fontSize: 13, color: "#EE6123", fontWeight: 500, cursor: "pointer" }}>Analyze with AI →</span></div>
+        </div>
+      </div>
+
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EBECF0", overflow: "hidden" }}>
+        <div style={{ padding: "18px 24px 14px", borderBottom: "1px solid #EBECF0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#091E42", margin: 0 }}>Client Performance</h2>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#EE6123", background: "#FFF4EE", padding: "2px 8px", borderRadius: 4, textTransform: "uppercase" }}>Agency</span>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <select style={{ fontSize: 13, padding: "6px 12px", borderRadius: 8, border: "1px solid #DFE1E6", color: "#6B778C", background: "#fff" }}>
+              <option>Last 7 days</option><option>Last 30 days</option><option>Last 90 days</option>
+            </select>
+            <button onClick={() => setPaintedDoor("Export Cross-Client Report")} style={{ fontSize: 13, padding: "6px 14px", borderRadius: 8, border: "1px solid #DFE1E6", background: "#fff", color: "#42526E", fontWeight: 500, cursor: "pointer" }}>Export ↓</button>
+          </div>
+        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead><tr style={{ background: "#FAFBFC" }}>
+            {["Client", "Engagements", "Link Clicks", "QR Scans", "Links", "7d Trend", ""].map(h => (
+              <th key={h} style={{ padding: "10px 24px", textAlign: "left", fontSize: 11, fontWeight: 600, color: "#6B778C", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>{clients.map(c => {
+            const m = clientMetrics[c.id], tr = trendMap[c.id];
+            return (
+              <tr key={c.id} style={{ borderTop: "1px solid #EBECF0", cursor: "pointer" }}
+                onMouseEnter={e => e.currentTarget.style.background = "#F9FAFB"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                onClick={() => onSelectClient(c.id)}>
+                <td style={{ padding: "14px 24px", display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: c.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>{c.icon}</div>
+                  <span style={{ fontWeight: 600, fontSize: 14, color: "#091E42" }}>{c.name}</span>
+                </td>
+                <td style={{ padding: "14px 24px", fontSize: 14, fontWeight: 600, color: "#091E42" }}>{m.engagements.toLocaleString()}</td>
+                <td style={{ padding: "14px 24px", fontSize: 14, color: "#42526E" }}>{m.clicks.toLocaleString()}</td>
+                <td style={{ padding: "14px 24px", fontSize: 14, color: "#42526E" }}>{m.qrScans.toLocaleString()}</td>
+                <td style={{ padding: "14px 24px", fontSize: 14, color: "#42526E" }}>{m.links}</td>
+                <td style={{ padding: "14px 24px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Sparkline data={sparkMap[c.id]} color={tr >= 0 ? "#12B886" : "#E64980"} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: tr >= 0 ? "#12B886" : "#E64980" }}>{tr >= 0 ? "+" : ""}{tr}%</span>
+                  </div>
+                </td>
+                <td style={{ padding: "14px 24px" }}><span style={{ fontSize: 12, color: "#6B778C", padding: "4px 10px", borderRadius: 6, border: "1px solid #DFE1E6" }}>View →</span></td>
+              </tr>
+            );
+          })}</tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const ClientView = ({ clientId, goBack }) => {
+  const c = clients.find(x => x.id === clientId), m = clientMetrics[clientId], links = recentLinks[clientId] || [];
+  return (
+    <div>
+      <div style={{ marginBottom: 20, cursor: "pointer" }} onClick={goBack}><span style={{ fontSize: 13, color: "#6B778C" }}>← All Clients</span></div>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: c.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18 }}>{c.icon}</div>
+        <div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#091E42", margin: 0 }}>{c.name}</h1>
+          <p style={{ fontSize: 13, color: "#6B778C", margin: "2px 0 0" }}>{m.campaigns} active campaigns · {m.links} links</p>
+        </div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 24 }}>
+        {[{ i: "📊", l: "ENGAGEMENTS", v: m.engagements }, { i: "🔗", l: "LINK CLICKS", v: m.clicks }, { i: "⊞", l: "QR CODE SCANS", v: m.qrScans }, { i: "📄", l: "PAGES CLICKS", v: m.pageClicks }].map(s => (
+          <div key={s.l} style={{ background: "#fff", borderRadius: 12, padding: "20px 22px", border: "1px solid #EBECF0" }}><StatCard icon={s.i} label={s.l} value={s.v} /></div>
+        ))}
+      </div>
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EBECF0", overflow: "hidden" }}>
+        <div style={{ padding: "18px 24px 14px", borderBottom: "1px solid #EBECF0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#091E42", margin: 0 }}>Recent Links</h2>
+          <button style={{ fontSize: 13, padding: "8px 16px", borderRadius: 8, border: "none", background: "#EE6123", color: "#fff", fontWeight: 600, cursor: "pointer" }}>+ Create Link</button>
+        </div>
+        {links.map((lk, i) => (
+          <div key={i} style={{ padding: "14px 24px", borderTop: i > 0 ? "1px solid #EBECF0" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "#091E42", fontFamily: "monospace" }}>{lk.title}</div>
+              <div style={{ fontSize: 12, color: "#EE6123", marginTop: 2 }}>{lk.url}</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#091E42" }}>{lk.clicks.toLocaleString()} clicks</div>
+              <div style={{ fontSize: 12, color: "#6B778C" }}>{lk.created}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const NamingConventions = () => {
+  const [sel, setSel] = useState(1);
+  const [vals, setVals] = useState({ client: "acme", campaign: "summer24", channel: "email", asset: "hero-cta" });
+  const tmpl = namingTemplates.find(t => t.id === sel);
+  const fields = tmpl.pattern.match(/\\{(\\w+)\\}/g).map(f => f.replace(/[{}]/g, ""));
+  const preview = fields.map(f => vals[f] || `{${f}}`).join("_");
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: "#091E42", margin: 0 }}>Naming Conventions</h1>
+        <p style={{ fontSize: 13, color: "#6B778C", margin: "4px 0 0" }}>Standardize link naming across your agency</p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 24 }}>
+        {namingTemplates.map(t => (
+          <div key={t.id} onClick={() => setSel(t.id)} style={{
+            background: sel === t.id ? "#FFF8F5" : "#fff", borderRadius: 12, padding: "18px 20px",
+            border: sel === t.id ? "2px solid #EE6123" : "1px solid #EBECF0", cursor: "pointer",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "#091E42" }}>{t.name}</span>
+              {t.isDefault && <span style={{ fontSize: 9, fontWeight: 700, color: "#EE6123", background: "#FFF4EE", padding: "2px 8px", borderRadius: 4, textTransform: "uppercase" }}>Default</span>}
+            </div>
+            <div style={{ fontSize: 12, fontFamily: "monospace", color: "#6B778C", background: "#F5F7FA", padding: "6px 10px", borderRadius: 6 }}>{t.pattern}</div>
+            <div style={{ fontSize: 11, color: "#6B778C", marginTop: 8 }}>e.g. {t.example}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #EBECF0", padding: "22px" }}>
+        <h2 style={{ fontSize: 15, fontWeight: 700, color: "#091E42", margin: "0 0 16px" }}>Live Preview</h2>
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${fields.length}, 1fr)`, gap: 12, marginBottom: 18 }}>
+          {fields.map(f => (
+            <div key={f}>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "#6B778C", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", marginBottom: 6 }}>{f}</label>
+              <input type="text" value={vals[f] || ""} onChange={e => setVals({ ...vals, [f]: e.target.value })} placeholder={f}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #DFE1E6", fontSize: 14, fontFamily: "monospace", boxSizing: "border-box", outline: "none" }}
+                onFocus={e => e.target.style.borderColor = "#EE6123"} onBlur={e => e.target.style.borderColor = "#DFE1E6"} />
+            </div>
+          ))}
+        </div>
+        <div style={{ background: "#F5F7FA", borderRadius: 8, padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#6B778C", textTransform: "uppercase" }}>Generated name</span>
+            <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "monospace", color: "#091E42", marginTop: 4 }}>{preview}</div>
+          </div>
+          <button style={{ fontSize: 13, padding: "8px 20px", borderRadius: 8, border: "none", background: "#EE6123", color: "#fff", fontWeight: 600, cursor: "pointer" }}>Use this name →</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function BitlyAgencyMode() {
+  const [activeClient, setActiveClient] = useState(null);
+  const [activeTab, setActiveTab] = useState("home");
+  const [paintedDoor, setPaintedDoor] = useState(null);
+  const [ddOpen, setDdOpen] = useState(false);
+  const sel = activeClient ? clients.find(c => c.id === activeClient) : null;
+
+  return (
+    <div style={{ display: "flex", height: "100vh", background: "#F5F7FA" }}>
+      <div style={{ width: 56, background: "#fff", borderRight: "1px solid #EBECF0", display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 12, flexShrink: 0 }}>
+        <div style={{ marginBottom: 16 }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#EE6123" /><path d="M7 12h10M12 7v10" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" /></svg>
+        </div>
+        <div style={{ width: 36, height: 36, borderRadius: 8, background: "#EE6123", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 20, color: "#fff", fontSize: 20, fontWeight: 300 }}>+</div>
+        <SidebarIcon icon="🏠" label="Home" active={activeTab === "home"} onClick={() => { setActiveTab("home"); setActiveClient(null); }} />
+        <SidebarIcon icon="🔗" label="Links" active={activeTab === "links"} onClick={() => setActiveTab("links")} />
+        <SidebarIcon icon="⊞" label="QR Codes" onClick={() => setPaintedDoor("QR Codes")} />
+        <SidebarIcon icon="📄" label="Link-in-bio" onClick={() => setPaintedDoor("Link-in-bio Pages")} />
+        <SidebarIcon icon="📊" label="Analytics" active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")} />
+        <SidebarIcon icon="🏷️" label="Campaigns" onClick={() => setPaintedDoor("Campaigns")} />
+        <SidebarIcon icon="✎" label="Naming" active={activeTab === "naming"} onClick={() => setActiveTab("naming")} badge={true} />
+        <div style={{ marginTop: "auto", marginBottom: 16 }}><SidebarIcon icon="⚙️" label="Settings" onClick={() => {}} /></div>
+      </div>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ height: 56, background: "#fff", borderBottom: "1px solid #EBECF0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", flexShrink: 0 }}>
+          <div style={{ position: "relative" }}>
+            <div onClick={() => setDdOpen(!ddOpen)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 8, border: "1px solid #DFE1E6", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#091E42" }}>
+              {sel ? (<><div style={{ width: 20, height: 20, borderRadius: 5, background: sel.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 10 }}>{sel.icon}</div>{sel.name}</>) : (<><div style={{ width: 20, height: 20, borderRadius: 5, background: "#EE6123", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>⊞</div>All Clients</>)}
+              <span style={{ fontSize: 10, color: "#6B778C", marginLeft: 4 }}>▼</span>
+            </div>
+            {ddOpen && (
+              <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 4, background: "#fff", borderRadius: 10, border: "1px solid #EBECF0", boxShadow: "0 4px 16px rgba(0,0,0,0.1)", width: 220, zIndex: 100, overflow: "hidden" }}>
+                <div onClick={() => { setActiveClient(null); setActiveTab("home"); setDdOpen(false); }} style={{ padding: "10px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#091E42" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#F5F7FA"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <div style={{ width: 24, height: 24, borderRadius: 6, background: "#EE6123", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 }}>⊞</div> All Clients
+                </div>
+                {clients.map(c => (
+                  <div key={c.id} onClick={() => { setActiveClient(c.id); setActiveTab("home"); setDdOpen(false); }} style={{ padding: "10px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#091E42" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#F5F7FA"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <div style={{ width: 24, height: 24, borderRadius: 6, background: c.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 11 }}>{c.icon}</div> {c.name}
+                  </div>
+                ))}
+                <div onClick={() => { setPaintedDoor("Add Client Workspace"); setDdOpen(false); }} style={{ padding: "10px 14px", borderTop: "1px solid #EBECF0", cursor: "pointer", fontSize: 13, color: "#6B778C" }}>+ Add client workspace</div>
+              </div>
             )}
           </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
-              onClick={() => setPaintedDoor("Export Report")}
-              style={{ fontSize: 13, padding: "8px 16px", borderRadius: 8, border: "1px solid #DFE1E6", background: "#fff", fontWeight: 500, color: "#42526E", cursor: "pointer" }}>
-              Export Report
-            </button>
-            <button style={{ fontSize: 13, padding: "8px 16px", borderRadius: 8, border: "none", background: "#EE6123", fontWeight: 600, color: "#fff", cursor: "pointer" }}>
-              + Create Link
-            </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 8, border: "1px solid #DFE1E6", background: "#F5F7FA", color: "#6B778C", fontSize: 13 }}>🔍 Search...</div>
+            <span style={{ fontSize: 18, color: "#6B778C", cursor: "pointer" }}>❓</span>
+            <span style={{ fontSize: 18, color: "#6B778C", cursor: "pointer" }}>⚙️</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 16, background: "#4C6EF5", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>BK</div>
+              <div><div style={{ fontSize: 12, fontWeight: 600, color: "#091E42" }}>Ben Kleiman</div><div style={{ fontSize: 10, color: "#6B778C" }}>Ben Kleiman</div></div>
+            </div>
           </div>
         </div>
 
-        {/* View Router */}
-        {activeTab === "naming" ? (
-          <NamingConventions />
-        ) : activeTab === "links" && activeClient !== "all" ? (
-          <ClientView clientId={activeClient} />
-        ) : activeTab === "dashboard" && activeClient !== "all" ? (
-          <ClientView clientId={activeClient} />
-        ) : (
-          <CrossClientDashboard onSelectClient={handleSelectClient} />
-        )}
+        <div style={{ flex: 1, overflow: "auto", padding: "24px 32px" }} onClick={() => ddOpen && setDdOpen(false)}>
+          {activeTab === "naming" ? <NamingConventions /> : activeClient ? <ClientView clientId={activeClient} goBack={() => setActiveClient(null)} /> : <AgencyDashboard onSelectClient={id => setActiveClient(id)} setPaintedDoor={setPaintedDoor} />}
+        </div>
       </div>
 
-      {/* Painted Door Modal */}
       {paintedDoor && <PaintedDoorModal feature={paintedDoor} onClose={() => setPaintedDoor(null)} />}
     </div>
   );
 }
-
 
 ReactDOM.createRoot(document.getElementById("root")).render(<BitlyAgencyMode />);
   </script>
